@@ -25,9 +25,16 @@ func (fg *FilmGenre) Select(id int) FilmGenre {
 		where f_g.id = %d
 	`, id)
 
-	err := conn.QueryRow(sql).Scan(&film_genre.ID, &film_genre.FilmID, &film_genre.GenreID, &film_genre.FilmName, &film_genre.GenreName)
+	row, err := conn.Query(sql)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+	}
+
+	for row.Next() {
+		row.Scan(&film_genre.ID, &film_genre.FilmID, &film_genre.GenreID, &film_genre.FilmName, &film_genre.GenreName)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	return film_genre
@@ -74,10 +81,6 @@ func (fg *FilmGenre) SelectRange(pageNumber int) []FilmGenre {
 		fmt.Println("-------------------Проверка окончена-----------------------")
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return films_genres
 }
 
@@ -107,10 +110,6 @@ func (fg *FilmGenre) SelectAll() []FilmGenre {
 		}
 		films_genres = append(films_genres, film_genre)
 	}
-
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
 
 	return films_genres
 }

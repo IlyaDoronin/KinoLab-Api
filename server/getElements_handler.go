@@ -86,10 +86,25 @@ func getFilmComments(c *gin.Context) {
 	c.JSON(200, gin.H{"film_comments": film_comments})
 }
 
+func getFilmCommentsForFilm(c *gin.Context) {
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil {
+		c.JSON(404, gin.H{"error": "неверный формат"})
+		return
+	}
+	id, err := strconv.Atoi(c.Query("id"))
+	if err != nil {
+		c.JSON(404, gin.H{"error": "неверный формат"})
+		return
+	}
+	film_comments := DBFilmCommentHandler.SelectForFilm(id, page)
+	c.JSON(200, gin.H{"film_comments": film_comments})
+}
+
 //Для получения ВСЕХ элементов
 
 func getAllFilms(c *gin.Context) {
-	films := DBFilmHandler.SelectAll()
+	films := DBFilmHandler.SelectAllWeb()
 	c.JSON(200, gin.H{"films": films})
 }
 

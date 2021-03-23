@@ -34,9 +34,5 @@ func (b *Banner) SelectRange() []Banner {
 		banners = append(banners, banner)
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return banners
 }

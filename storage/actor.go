@@ -18,9 +18,16 @@ func (a *Actor) Select(id int) Actor {
 
 	sql := fmt.Sprintf("select * from actor where id = %d", id)
 
-	err := conn.QueryRow(sql).Scan(&actor.ID, &actor.FName, &actor.LName)
+	row, err := conn.Query(sql)
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	for row.Next() {
+		err := row.Scan(&actor.ID, &actor.FName, &actor.LName)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	return actor
@@ -65,10 +72,6 @@ func (p *Actor) SelectRange(pageNumber int) []Actor {
 		fmt.Println("-------------------Проверка окончена-----------------------")
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return actors
 }
 
@@ -94,10 +97,6 @@ func (p *Actor) SelectAll() []Actor {
 		}
 		actors = append(actors, actor)
 	}
-
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
 
 	return actors
 }

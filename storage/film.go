@@ -10,10 +10,11 @@ type Film struct {
 	FilmName    string
 	Description string
 	FilmYear    string
-	Budget      float32
+	Budget      int
 	FileURL     string
 	PosterURL   string
 	BannerURL   string
+	Genres      []string
 }
 
 type Year struct {
@@ -26,11 +27,18 @@ func (a *Film) Select(id int) Film {
 
 	film := Film{}
 
-	sql := fmt.Sprintf("select id, Film_name, Description, Film_year::date::varchar, Budget, File_URL, Poster_URL, Banner_URL from film where id = %d", id)
+	sql := fmt.Sprintf("select id, Film_name, Description, Film_year::date::varchar, Budget::int, File_URL, Poster_URL, Banner_URL from film where id = %d", id)
 
-	err := conn.QueryRow(sql).Scan(&film.ID, &film.FilmName, &film.Description, &film.FilmYear, &film.Budget, &film.FileURL, &film.PosterURL, &film.BannerURL)
+	row, err := conn.Query(sql)
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	for row.Next() {
+		row.Scan(&film.ID, &film.FilmName, &film.Description, &film.FilmYear, &film.Budget, &film.FileURL, &film.PosterURL, &film.BannerURL)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	return film
@@ -45,7 +53,7 @@ func (f *Film) SelectRange(pageNumber int) []Film {
 
 	sql := fmt.Sprintf(`
 		select row_number() over() as num, f.id, f.film_name, 
-		f.description, f.film_year::date::varchar, f.budget, File_URL, f.poster_url, f.banner_url
+		f.description, f.film_year::date::varchar, f.budget::int, File_URL, f.poster_url, f.banner_url
 		from film f
 		order by num asc limit %d offset %d
 	`, toID, fromID)
@@ -78,10 +86,6 @@ func (f *Film) SelectRange(pageNumber int) []Film {
 		fmt.Println("-------------------Проверка окончена-----------------------")
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return films
 }
 
@@ -108,21 +112,17 @@ func (f *Film) SelectAllYears() []Year {
 		years = append(years, year)
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return years
 }
 
-//SelectAll - метод для выборки данных из бд
-func (f *Film) SelectAll() []Film {
+//SelectAllWeb - метод для выборки данных из бд
+func (f *Film) SelectAllWeb() []Film {
 
 	films := []Film{}
 
 	rows, err := conn.Query(`
 		select row_number() over() as num, f.id, f.film_name, 
-		f.description, f.film_year::date::varchar, f.budget, File_URL, f.poster_url, f.banner_url
+		f.description, f.film_year::date::varchar, f.budget::int, File_URL, f.poster_url, f.banner_url
 		from film f
 		order by num asc
 	`)
@@ -143,9 +143,48 @@ func (f *Film) SelectAll() []Film {
 		films = append(films, film)
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
+	return films
+}
+
+//SelectAll - метод для выборки данных из бд
+func (f *Film) SelectRangeWeb(pageNumber int) []Film {
+
+	films := []Film{}
+
+	fromID, toID := GetIDBorders(pageNumber)
+
+	rows, err := conn.Query(fmt.Sprintf(`
+		select
+		row_number() over() as num,
+		id,
+		f.Film_name,
+		f.Poster_URL,
+		g.g_array
+		from Film as f
+		join (
+			select f_g.film_id as id, array_agg(g.genre_name) as g_array
+			from film_genre as f_g
+			join genre g on g.id = f_g.genre_id 
+			group by f_g.film_id
+		) g using (id)
+		order by num asc limit %d offset %d
+	`, toID, fromID))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//Проход по всем элементом результата запроса и запись результата в объедок структуры
+	for rows.Next() {
+
+		film := Film{}
+
+		err = rows.Scan(nil, &film.ID, &film.FilmName, &film.PosterURL, &film.Genres)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		films = append(films, film)
+	}
 
 	return films
 }

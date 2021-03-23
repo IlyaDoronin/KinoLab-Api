@@ -109,8 +109,8 @@ func Start() {
 	{
 		websiteGroup.GET("/film", getWebSiteFilm)
 		websiteGroup.GET("/banners", getBanners)
-		websiteGroup.GET("/comments", getFilmComments)
-		websiteGroup.GET("/films", getFilms)
+		websiteGroup.GET("/comments", getFilmCommentsForFilm)
+		websiteGroup.GET("/films", getFilmsWeb)
 		websiteGroup.GET("/actors", getAllActors)
 		websiteGroup.GET("/authors", getAllAuthors)
 		websiteGroup.GET("/genres", getAllGenres)

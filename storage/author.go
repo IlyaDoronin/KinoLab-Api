@@ -18,9 +18,17 @@ func (a *Author) Select(id int) Author {
 
 	sql := fmt.Sprintf("select * from author where id = %d", id)
 
-	err := conn.QueryRow(sql).Scan(&author.ID, &author.FName, &author.LName)
+	row, err := conn.Query(sql)
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	for row.Next() {
+
+		row.Scan(&author.ID, &author.FName, &author.LName)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	return author
@@ -65,10 +73,6 @@ func (p *Author) SelectRange(pageNumber int) []Author {
 		fmt.Println("-------------------Проверка окончена-----------------------")
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return authors
 }
 
@@ -94,10 +98,6 @@ func (p *Author) SelectAll() []Author {
 		}
 		authors = append(authors, author)
 	}
-
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
 
 	return authors
 }

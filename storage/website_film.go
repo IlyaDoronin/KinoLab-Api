@@ -10,7 +10,7 @@ type WebSiteFilm struct {
 	FilmName    string
 	Description string
 	FilmYear    string
-	Budget      float32
+	Budget      int
 	FileURL     string
 	PosterURL   string
 	BannerURL   string
@@ -31,9 +31,9 @@ func (w *WebSiteFilm) Select(id int) WebSiteFilm {
 
 	film := WebSiteFilm{}
 
-	err := conn.QueryRow(
+	row, err := conn.Query(
 		fmt.Sprintf(`
-		select id, f.Film_name, f.Description, f.Film_year::date::varchar, f.Budget, f.File_URL, f.Poster_URL, f.Banner_URL, au.au_array, ac.ac_array, g.g_array
+		select id, f.Film_name, f.Description, f.Film_year::date::varchar, f.Budget::int, f.File_URL, f.Poster_URL, f.Banner_URL, au.au_array, ac.ac_array, g.g_array
 		from Film as f
 		join (
 			select f_au.film_id as id, array_agg(au.lname || ' '  || au.fname) as au_array
@@ -54,12 +54,19 @@ func (w *WebSiteFilm) Select(id int) WebSiteFilm {
 			group by f_g.film_id
 		) g using (id)
 		where id = %d
-		`, id)).Scan(
-		&film.ID, &film.FilmName, &film.Description, &film.FilmYear, &film.Budget,
-		&film.FileURL, &film.PosterURL, &film.BannerURL, &film.Authors, &film.Actors, &film.Genres,
-	)
+		`, id))
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	for row.Next() {
+		row.Scan(
+			&film.ID, &film.FilmName, &film.Description, &film.FilmYear, &film.Budget,
+			&film.FileURL, &film.PosterURL, &film.BannerURL, &film.Authors, &film.Actors, &film.Genres,
+		)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	return film
@@ -102,10 +109,6 @@ func (f *WebSiteFilm) SelectRange(pageNumber int) []WebFiteFilms {
 		}
 		films = append(films, film)
 	}
-
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
 
 	return films
 }

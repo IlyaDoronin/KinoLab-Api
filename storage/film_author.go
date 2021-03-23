@@ -24,9 +24,16 @@ func (fa *FilmAuthor) Select(id int) FilmAuthor {
 		where f_au.id = %d
 	`, id)
 
-	err := conn.QueryRow(sql).Scan(&film_author.ID, &film_author.FilmID, &film_author.AuthorID, &film_author.FilmName, &film_author.AuthorName)
+	row, err := conn.Query(sql)
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	for row.Next() {
+		row.Scan(&film_author.ID, &film_author.FilmID, &film_author.AuthorID, &film_author.FilmName, &film_author.AuthorName)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	return film_author
@@ -71,10 +78,6 @@ func (fa *FilmAuthor) SelectRange(pageNumber int) []FilmAuthor {
 		fmt.Println("-------------------Проверка окончена-----------------------")
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return films_authors
 }
 
@@ -104,10 +107,6 @@ func (fa *FilmAuthor) SelectAll() []FilmAuthor {
 		}
 		films_authors = append(films_authors, film_author)
 	}
-
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
 
 	return films_authors
 }

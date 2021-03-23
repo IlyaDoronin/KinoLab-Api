@@ -8,6 +8,16 @@ import (
 	"github.com/yeahyeahcore/KinoLab-Api/storage"
 )
 
+func getFilmsWeb(c *gin.Context) {
+	page, err := strconv.Atoi(c.Query("page"))
+	if err != nil {
+		c.JSON(404, gin.H{"error": "неверный формат"})
+		return
+	}
+	films := DBFilmHandler.SelectRangeWeb(page)
+	c.JSON(200, gin.H{"films": films})
+}
+
 func getWebSiteFilm(c *gin.Context) {
 	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {

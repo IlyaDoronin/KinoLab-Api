@@ -27,9 +27,9 @@ func getActorEditPage(c *gin.Context) {
 		return
 	}
 
-	author := DBActorHandler.Select(ID)
+	actor := DBActorHandler.Select(ID)
 
-	c.JSON(200, gin.H{"author": author})
+	c.JSON(200, gin.H{"actor": actor})
 }
 
 func getGenreEditPage(c *gin.Context) {

@@ -17,9 +17,16 @@ func (a *Genre) Select(id int) Genre {
 
 	sql := fmt.Sprintf("select * from genre where id = %d", id)
 
-	err := conn.QueryRow(sql).Scan(&genre.ID, &genre.GenreName)
+	row, err := conn.Query(sql)
 	if err != nil {
 		fmt.Println(err)
+	}
+
+	for row.Next() {
+		row.Scan(&genre.ID, &genre.GenreName)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	return genre
@@ -64,10 +71,6 @@ func (p *Genre) SelectRange(pageNumber int) []Genre {
 		fmt.Println("-------------------Проверка окончена-----------------------")
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return genres
 }
 
@@ -93,10 +96,6 @@ func (p *Genre) SelectAll() []Genre {
 		}
 		genres = append(genres, genre)
 	}
-
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
 
 	return genres
 }

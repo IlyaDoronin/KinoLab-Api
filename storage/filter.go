@@ -136,10 +136,6 @@ func (w *Filter) SelectFilter(sql string) []FilterResult {
 		films = append(films, film)
 	}
 
-	// rows.Close вызывается rows.Next когда все строки прочитаны
-	// или если произошла ошибка в методе Next или Scan.
-	defer rows.Close()
-
 	return films
 
 }

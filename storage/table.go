@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"log"
 )
@@ -18,11 +19,26 @@ func Exec(sql string) {
 
 //Fetch возвращает одну строку результата запроса БД
 func Fetch(sql string) string {
+
+	err := conn.Ping(context.Background())
+	if err != nil {
+		fmt.Println("couldn't connect to TimescaleDB: %w", err)
+	}
+
 	var result string
-	err := conn.QueryRow(sql).Scan(&result)
+	row, err := conn.Query(sql)
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	for row.Next() {
+
+		row.Scan(&result)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
 	return result
 }
 
@@ -47,8 +63,6 @@ func FetchAll(sql string) []string {
 		rows = append(rows, row)
 	}
 
-	defer rows_result.Close()
-
 	return rows
 }
 
@@ -61,14 +75,27 @@ func GetIDBorders(pageNumber int) (left, right int) {
 
 //GetPageCount Получает количество страниц
 func GetPageCount(table string) int {
-	var rowCount int
-	err := conn.QueryRow(fmt.Sprintf("select count(id) from %s", table)).Scan(&rowCount)
+
+	err := conn.Ping(context.Background())
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("couldn't connect to TimescaleDB: %w", err)
+		Init()
 	}
+
+	var rowCount int
+	row, err := conn.Query(fmt.Sprintf("select count(id) from %s", table))
+
+	for row.Next() {
+		row.Scan(&rowCount)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
 	pageCount := rowCount / 10
 	if rowCount%10 != 0 {
 		pageCount++
 	}
+
 	return pageCount
 }
