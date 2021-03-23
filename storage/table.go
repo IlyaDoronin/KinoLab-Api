@@ -9,7 +9,7 @@ import (
 //Exec выполняет запрос в БД (В основном DELETE или INSERT)
 func Exec(sql string) {
 
-	rows, err := conn.Exec(sql)
+	rows, err := conn.Exec(context.Background(), sql)
 	if err != nil {
 		log.Println(err)
 	}
@@ -20,13 +20,8 @@ func Exec(sql string) {
 //Fetch возвращает одну строку результата запроса БД
 func Fetch(sql string) string {
 
-	err := conn.Ping(context.Background())
-	if err != nil {
-		fmt.Println("couldn't connect to TimescaleDB: %w", err)
-	}
-
 	var result string
-	row, err := conn.Query(sql)
+	row, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -46,7 +41,7 @@ func FetchAll(sql string) []string {
 
 	var rows []string
 
-	rows_result, err := conn.Query(sql)
+	rows_result, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -76,14 +71,8 @@ func GetIDBorders(pageNumber int) (left, right int) {
 //GetPageCount Получает количество страниц
 func GetPageCount(table string) int {
 
-	err := conn.Ping(context.Background())
-	if err != nil {
-		fmt.Println("couldn't connect to TimescaleDB: %w", err)
-		Init()
-	}
-
 	var rowCount int
-	row, err := conn.Query(fmt.Sprintf("select count(id) from %s", table))
+	row, err := conn.Query(context.Background(), fmt.Sprintf("select count(id) from %s", table))
 
 	for row.Next() {
 		row.Scan(&rowCount)

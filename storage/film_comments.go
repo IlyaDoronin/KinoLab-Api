@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -22,7 +23,7 @@ func (f_c *FilmComments) Select(id int) FilmComments {
 		select id, film_id, commentator_name, comment_text, created_at::timestamp(0)::varchar from film_comments where id = %d
 	`, id)
 
-	row, err := conn.Query(sql)
+	row, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -53,7 +54,7 @@ func (p *FilmComments) SelectRange(pageNumber int) []FilmComments {
 		order by num asc limit %d offset %d
 	`, toID, fromID)
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -91,7 +92,7 @@ func (fa *FilmComments) SelectAll() []FilmComments {
 
 	film_comments := []FilmComments{}
 
-	rows, err := conn.Query(`
+	rows, err := conn.Query(context.Background(), `
 		select row_number() over() as num, f_c.id , f_c.film_id, 
 		f_c.commentator_name, f_c.comment_text, f_c.created_at::timestamp(0)::varchar
 		from film_comments f_c
@@ -132,7 +133,7 @@ func (p *FilmComments) SelectForFilm(id, pageNumber int) []FilmComments {
 		order by num desc limit %d offset %d
 	`, id, toID, fromID)
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}

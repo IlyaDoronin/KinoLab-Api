@@ -1,6 +1,9 @@
 package storage
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type Banner struct {
 	FilmName  string
@@ -16,7 +19,7 @@ func (b *Banner) SelectRange() []Banner {
 		select row_number() over() as num, Banner_URL, Film_name from film order by num asc limit 5 offset 0
 	`)
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}

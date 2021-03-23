@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 )
@@ -116,7 +117,7 @@ func (w *Filter) SelectFilter(sql string) []FilterResult {
 
 	films := []FilterResult{}
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}

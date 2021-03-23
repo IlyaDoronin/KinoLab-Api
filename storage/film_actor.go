@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -24,7 +25,7 @@ func (fa *FilmActor) Select(id int) FilmActor {
 		where f_ac.id = %d
 	`, id)
 
-	row, err := conn.Query(sql)
+	row, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -52,7 +53,7 @@ func (fa *FilmActor) SelectRange(pageNumber int) []FilmActor {
 		order by num asc limit %d offset %d
 	`, toID, fromID)
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -86,7 +87,7 @@ func (fa *FilmActor) SelectAll() []FilmActor {
 
 	films_actors := []FilmActor{}
 
-	rows, err := conn.Query(`
+	rows, err := conn.Query(context.Background(), `
 		select row_number() over() as num, f_ac.id, f_ac.film_id, f_ac.actor_id, f.film_name, (ac.lname || ' ' || ac.fname) as actor_name
 		from film_actor f_ac join film f on f.id = f_ac.film_id join actor ac on ac.id = f_ac.actor_id
 		order by num asc

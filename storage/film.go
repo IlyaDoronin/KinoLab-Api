@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -29,7 +30,7 @@ func (a *Film) Select(id int) Film {
 
 	sql := fmt.Sprintf("select id, Film_name, Description, Film_year::date::varchar, Budget::int, File_URL, Poster_URL, Banner_URL from film where id = %d", id)
 
-	row, err := conn.Query(sql)
+	row, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -58,7 +59,7 @@ func (f *Film) SelectRange(pageNumber int) []Film {
 		order by num asc limit %d offset %d
 	`, toID, fromID)
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -94,7 +95,7 @@ func (f *Film) SelectAllYears() []Year {
 
 	years := []Year{}
 
-	rows, err := conn.Query("select row_number() over() as num, (extract(year from film_year)) as film_year from film")
+	rows, err := conn.Query(context.Background(), "select row_number() over() as num, (extract(year from film_year)) as film_year from film")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -120,7 +121,7 @@ func (f *Film) SelectAllWeb() []Film {
 
 	films := []Film{}
 
-	rows, err := conn.Query(`
+	rows, err := conn.Query(context.Background(), `
 		select row_number() over() as num, f.id, f.film_name, 
 		f.description, f.film_year::date::varchar, f.budget::int, File_URL, f.poster_url, f.banner_url
 		from film f
@@ -153,7 +154,7 @@ func (f *Film) SelectRangeWeb(pageNumber int) []Film {
 
 	fromID, toID := GetIDBorders(pageNumber)
 
-	rows, err := conn.Query(fmt.Sprintf(`
+	rows, err := conn.Query(context.Background(), fmt.Sprintf(`
 		select
 		row_number() over() as num,
 		id,

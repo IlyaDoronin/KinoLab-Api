@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -17,7 +18,7 @@ func (a *Genre) Select(id int) Genre {
 
 	sql := fmt.Sprintf("select * from genre where id = %d", id)
 
-	row, err := conn.Query(sql)
+	row, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -45,7 +46,7 @@ func (p *Genre) SelectRange(pageNumber int) []Genre {
 		order by num asc limit %d offset %d
 	`, toID, fromID)
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -79,7 +80,7 @@ func (p *Genre) SelectAll() []Genre {
 
 	genres := []Genre{}
 
-	rows, err := conn.Query("select * from genre")
+	rows, err := conn.Query(context.Background(), "select * from genre")
 	if err != nil {
 		fmt.Println(err)
 	}

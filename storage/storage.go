@@ -1,16 +1,17 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/yeahyeahcore/KinoLab-Api/conf"
 )
 
 var (
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 )
 
 //Init - Инициализация драйвера бд
@@ -28,12 +29,12 @@ func Init() {
 		return
 	}
 
-	connCfg, err := pgx.ParseURI(GetConfig())
+	connCfg, err := pgxpool.ParseConfig(GetConfig())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	conn, err = pgx.Connect(connCfg)
+	conn, err = pgxpool.Connect(context.Background(), connCfg.ConnString())
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -31,7 +32,7 @@ func (w *WebSiteFilm) Select(id int) WebSiteFilm {
 
 	film := WebSiteFilm{}
 
-	row, err := conn.Query(
+	row, err := conn.Query(context.Background(),
 		fmt.Sprintf(`
 		select id, f.Film_name, f.Description, f.Film_year::date::varchar, f.Budget::int, f.File_URL, f.Poster_URL, f.Banner_URL, au.au_array, ac.ac_array, g.g_array
 		from Film as f
@@ -92,7 +93,7 @@ func (f *WebSiteFilm) SelectRange(pageNumber int) []WebFiteFilms {
 		order by num asc limit %d offset %d
 	`, toID, fromID)
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}

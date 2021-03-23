@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -18,7 +19,7 @@ func (a *Actor) Select(id int) Actor {
 
 	sql := fmt.Sprintf("select * from actor where id = %d", id)
 
-	row, err := conn.Query(sql)
+	row, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -46,7 +47,7 @@ func (p *Actor) SelectRange(pageNumber int) []Actor {
 		order by num asc limit %d offset %d
 	`, toID, fromID)
 
-	rows, err := conn.Query(sql)
+	rows, err := conn.Query(context.Background(), sql)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -80,7 +81,7 @@ func (p *Actor) SelectAll() []Actor {
 
 	actors := []Actor{}
 
-	rows, err := conn.Query("select * from actor")
+	rows, err := conn.Query(context.Background(), "select * from actor")
 	if err != nil {
 		fmt.Println(err)
 	}
