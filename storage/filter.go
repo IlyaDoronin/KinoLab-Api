@@ -8,11 +8,11 @@ import (
 
 //Filter структура для фильтрации информации
 type Filter struct {
-	Genres  []string `json:"genres,omitempty"`
-	Actors  []string `json:"actors,omitempty"`
-	Authors []string `json:"authors,omitempty"`
-	Years   []string `json:"years,omitempty"`
 	Search  string   `json:"search,omitempty"`
+	Genres  []string `json:"genres,omitempty"`
+	Authors []string `json:"authors,omitempty"`
+	Actors  []string `json:"actors,omitempty"`
+	Years   []string `json:"years,omitempty"`
 }
 
 type FilterResult struct {

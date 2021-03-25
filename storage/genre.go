@@ -43,7 +43,7 @@ func (p *Genre) SelectRange(pageNumber int) []Genre {
 	sql := fmt.Sprintf(`
 		select row_number() over() as num, g.id, g.genre_name 
 		from genre g
-		order by num asc limit %d offset %d
+		order by num desc limit %d offset %d
 	`, toID, fromID)
 
 	rows, err := conn.Query(context.Background(), sql)

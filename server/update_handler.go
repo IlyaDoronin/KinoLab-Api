@@ -10,6 +10,28 @@ import (
 	"github.com/yeahyeahcore/KinoLab-Api/storage"
 )
 
+func renameFilmDirectory(oldFilmName, newFilmName string) {
+	err := os.Rename(fmt.Sprintf("film-store/%s", oldFilmName), fmt.Sprintf("film-store/%s", newFilmName))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = os.Rename(fmt.Sprintf("film-store/%s/%s.mp4", newFilmName, oldFilmName), fmt.Sprintf("film-store/%s/%s.mp4", newFilmName, newFilmName))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = os.Rename(fmt.Sprintf("film-store/%s/%s-poster.jpg", newFilmName, oldFilmName), fmt.Sprintf("film-store/%s/%s-poster.jpg", newFilmName, newFilmName))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = os.Rename(fmt.Sprintf("film-store/%s/%s-banner.jpg", newFilmName, oldFilmName), fmt.Sprintf("film-store/%s/%s-banner.jpg", newFilmName, newFilmName))
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 //Удаляет и загружает необходимые файлы для замены
 func removeOldFiles(c *gin.Context, id int, newFilmName string, files []*multipart.FileHeader) {
 
@@ -20,18 +42,20 @@ func removeOldFiles(c *gin.Context, id int, newFilmName string, files []*multipa
 
 	if files[0] != nil {
 		_ = os.Remove(fmt.Sprintf("film-store/%s/%s.mp4", filmName, filmName))
-		_ = c.SaveUploadedFile(files[0], filmFileName)
+		_ = c.SaveUploadedFile(files[0], fmt.Sprintf("film-store/%s/%s", filmName, filmFileName))
 	}
 
 	if files[1] != nil {
 		_ = os.Remove(fmt.Sprintf("film-store/%s/%s-poster.jpg", filmName, filmName))
-		_ = c.SaveUploadedFile(files[1], posterFileName)
+		_ = c.SaveUploadedFile(files[1], fmt.Sprintf("film-store/%s/%s", filmName, posterFileName))
 	}
 
 	if files[2] != nil {
 		_ = os.Remove(fmt.Sprintf("film-store/%s/%s-banner.jpg", filmName, filmName))
-		_ = c.SaveUploadedFile(files[2], bannerFileName)
+		_ = c.SaveUploadedFile(files[2], fmt.Sprintf("film-store/%s/%s", filmName, bannerFileName))
 	}
+
+	renameFilmDirectory(filmName, newFilmName)
 
 }
 
@@ -74,33 +98,21 @@ func updateFilm(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(filmFile.Filename)
 
 	posterFile, err := c.FormFile("posterFile")
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(posterFile.Filename)
 
 	bannerFile, err := c.FormFile("bannerFile")
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(bannerFile.Filename)
-
 	//Создаём массив с пришедшими файлами
 	files := []*multipart.FileHeader{filmFile, posterFile, bannerFile}
 
 	//Если приходят новые файлы, то мы удаляем старые
 	removeOldFiles(c, id, filmName, files)
-
-	//Задаём файлам их местоположение
-	filmFileDst := fmt.Sprintf("film-store/%s/%s.mp4", filmName, filmName)
-	posterFileDst := fmt.Sprintf("film-store/%s/%s-poster.jpg", filmName, filmName)
-	bannerFileDst := fmt.Sprintf("film-store/%s/%s-banner.jpg", filmName, filmName)
-	fmt.Println(filmFileDst)
-	fmt.Println(posterFileDst)
-	fmt.Println(bannerFileDst)
 
 	//Создаёт переменную url к файлу в БД
 	filmFileURL := (fmt.Sprintf("http://%s:%s/media/%s/%s.mp4", Host, Port, filmName, filmName))
@@ -111,9 +123,17 @@ func updateFilm(c *gin.Context) {
 	fmt.Println(bannerFileURL)
 
 	sql := fmt.Sprintf(`
-		insert into Film(Film_name, Description, Film_year, Budget, File_URL, Poster_URL, Banner_URL)
-		values('%s', '%s', '%s', %f, '%s', '%s', '%s')
-	`, filmName, description, filmYear, budget, filmFileURL, posterFileURL, bannerFileURL)
+		update Film
+		set 
+		Film_Name = '%s',
+		Description = '%s',
+		Film_year = '%s',
+		Budget = '%f',
+		File_URL = '%s',
+		Poster_URL = '%s',
+		Banner_URL = '%s'
+		where id = %d
+	`, filmName, description, filmYear, budget, filmFileURL, posterFileURL, bannerFileURL, id)
 
 	storage.Exec(sql)
 }
@@ -121,7 +141,7 @@ func updateFilm(c *gin.Context) {
 func updateGenre(c *gin.Context) {
 	//Ловит форму и зависывает данные
 	id, _ := strconv.Atoi(c.PostForm("id"))
-	ganreName := c.PostForm("ganreName")
+	ganreName := c.PostForm("genreName")
 	fmt.Println(ganreName)
 
 	storage.Exec(fmt.Sprintf(`update genre set Genre_name = '%s' where id = %d`, ganreName, id))
@@ -135,7 +155,7 @@ func updateFilmGenre(c *gin.Context) {
 	fmt.Println(filmID)
 	fmt.Println(genreID)
 
-	storage.Exec(fmt.Sprintf(`update Film_Genre set Film_ID = %d Genre_ID = %d where id = %d`, filmID, genreID, id))
+	storage.Exec(fmt.Sprintf(`update Film_Genre set Film_ID = %d, Genre_ID = %d where id = %d`, filmID, genreID, id))
 }
 
 func updateFilmAuthor(c *gin.Context) {
@@ -146,7 +166,7 @@ func updateFilmAuthor(c *gin.Context) {
 	fmt.Println(filmID)
 	fmt.Println(authorID)
 
-	storage.Exec(fmt.Sprintf(`update Film_Author set Film_ID = %d Author_ID = %d where id = %d`, filmID, authorID, id))
+	storage.Exec(fmt.Sprintf(`update Film_Author set Film_ID = %d, Author_ID = %d where id = %d`, filmID, authorID, id))
 }
 
 func updateFilmActor(c *gin.Context) {
@@ -157,7 +177,7 @@ func updateFilmActor(c *gin.Context) {
 	fmt.Println(filmID)
 	fmt.Println(actorID)
 
-	storage.Exec(fmt.Sprintf(`update Film_Actor set Film_ID = %d Actor_ID = %d where id = %d`, filmID, actorID, id))
+	storage.Exec(fmt.Sprintf(`update Film_Actor set Film_ID = %d, Actor_ID = %d where id = %d`, filmID, actorID, id))
 }
 
 func updateFilmComment(c *gin.Context) {
@@ -172,7 +192,7 @@ func updateFilmComment(c *gin.Context) {
 
 	storage.Exec(fmt.Sprintf(`
 		update Film_Comments set 
-		film_id = %d commentator_name = %s comment_text = %s
+		film_id = %d, commentator_name = '%s', comment_text = '%s'
 		where id = %d
 	`, filmID, name, text, id))
 }

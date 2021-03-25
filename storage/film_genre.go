@@ -51,7 +51,7 @@ func (fg *FilmGenre) SelectRange(pageNumber int) []FilmGenre {
 	sql := fmt.Sprintf(`
 		select row_number() over() as num, f_g.id, f_g.film_id, f_g.genre_id, f.film_name, g.genre_name
 		from film_genre f_g join film f on f.id = f_g.film_id join genre g on g.id = f_g.genre_id
-		order by num asc limit %d offset %d
+		order by num desc limit %d offset %d
 	`, toID, fromID)
 
 	rows, err := conn.Query(context.Background(), sql)
@@ -93,7 +93,7 @@ func (fg *FilmGenre) SelectAll() []FilmGenre {
 	rows, err := conn.Query(context.Background(), `
 		select row_number() over() as num, f_g.id, f_g.film_id, f_g.genre_id, f.film_name, g.genre_name
 		from film_genre f_g join film f on f.id = f_g.film_id join genre g on g.id = f_g.genre_id
-		order by num asc 
+		order by num desc 
 	`)
 	if err != nil {
 		fmt.Println(err)

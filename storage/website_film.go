@@ -34,7 +34,7 @@ func (w *WebSiteFilm) Select(id int) WebSiteFilm {
 
 	row, err := conn.Query(context.Background(),
 		fmt.Sprintf(`
-		select id, f.Film_name, f.Description, f.Film_year::date::varchar, f.Budget::int, f.File_URL, f.Poster_URL, f.Banner_URL, au.au_array, ac.ac_array, g.g_array
+		select id, f.Film_name, f.Description, f.Film_year::date::varchar, f.Budget::bigint, f.File_URL, f.Poster_URL, f.Banner_URL, au.au_array, ac.ac_array, g.g_array
 		from Film as f
 		join (
 			select f_au.film_id as id, array_agg(au.lname || ' '  || au.fname) as au_array
@@ -90,7 +90,7 @@ func (f *WebSiteFilm) SelectRange(pageNumber int) []WebFiteFilms {
 			join genre g on g.id = f_g.genre_id 
 			group by f_g.film_id
 		) g using (id)
-		order by num asc limit %d offset %d
+		order by num desc limit %d offset %d
 	`, toID, fromID)
 
 	rows, err := conn.Query(context.Background(), sql)

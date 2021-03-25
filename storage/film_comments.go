@@ -51,7 +51,7 @@ func (p *FilmComments) SelectRange(pageNumber int) []FilmComments {
 		select row_number() over() as num, f_c.id , f_c.film_id, 
 		f_c.commentator_name, f_c.comment_text, f_c.created_at::timestamp(0)::varchar
 		from film_comments f_c
-		order by num asc limit %d offset %d
+		order by num desc limit %d offset %d
 	`, toID, fromID)
 
 	rows, err := conn.Query(context.Background(), sql)
@@ -96,7 +96,7 @@ func (fa *FilmComments) SelectAll() []FilmComments {
 		select row_number() over() as num, f_c.id , f_c.film_id, 
 		f_c.commentator_name, f_c.comment_text, f_c.created_at::timestamp(0)::varchar
 		from film_comments f_c
-		order by num asc
+		order by num desc
 	`)
 	if err != nil {
 		fmt.Println(err)

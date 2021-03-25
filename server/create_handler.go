@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -68,6 +69,12 @@ func createFilm(c *gin.Context) {
 
 	bannerFileDst := (fmt.Sprintf("film-store/%s/%s-banner.jpg", filmName, filmName))
 	fmt.Println(bannerFileDst)
+
+	//Create a folder/directory at a full qualified path
+	err = os.Mkdir(fmt.Sprintf("film-store/%s", filmName), 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//Загружает файлы в их местоположения
 	err = c.SaveUploadedFile(filmFile, filmFileDst)

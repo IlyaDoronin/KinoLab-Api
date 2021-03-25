@@ -28,7 +28,7 @@ func (a *Film) Select(id int) Film {
 
 	film := Film{}
 
-	sql := fmt.Sprintf("select id, Film_name, Description, Film_year::date::varchar, Budget::int, File_URL, Poster_URL, Banner_URL from film where id = %d", id)
+	sql := fmt.Sprintf("select id, Film_name, Description, Film_year::date::varchar, Budget::bigint, File_URL, Poster_URL, Banner_URL from film where id = %d", id)
 
 	row, err := conn.Query(context.Background(), sql)
 	if err != nil {
@@ -54,9 +54,9 @@ func (f *Film) SelectRange(pageNumber int) []Film {
 
 	sql := fmt.Sprintf(`
 		select row_number() over() as num, f.id, f.film_name, 
-		f.description, f.film_year::date::varchar, f.budget::int, File_URL, f.poster_url, f.banner_url
+		f.description, f.film_year::date::varchar, f.budget::bigint, File_URL, f.poster_url, f.banner_url
 		from film f
-		order by num asc limit %d offset %d
+		order by num desc limit %d offset %d
 	`, toID, fromID)
 
 	rows, err := conn.Query(context.Background(), sql)
@@ -125,7 +125,7 @@ func (f *Film) SelectAllWeb() []Film {
 		select row_number() over() as num, f.id, f.film_name, 
 		f.description, f.film_year::date::varchar, f.budget::int, File_URL, f.poster_url, f.banner_url
 		from film f
-		order by num asc
+		order by num desc
 	`)
 	if err != nil {
 		fmt.Println(err)
@@ -168,7 +168,7 @@ func (f *Film) SelectRangeWeb(pageNumber int) []Film {
 			join genre g on g.id = f_g.genre_id 
 			group by f_g.film_id
 		) g using (id)
-		order by num asc limit %d offset %d
+		order by num desc limit %d offset %d
 	`, toID, fromID))
 	if err != nil {
 		fmt.Println(err)

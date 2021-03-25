@@ -39,7 +39,7 @@ func getFilteredFilm(c *gin.Context) {
 	var filterJSON storage.Filter
 
 	//Ловим json из post запроса
-	c.BindJSON(&filterJSON)
+	c.ShouldBindJSON(&filterJSON)
 
 	//Генерируем sql запрос и записываем в переменную
 	resultSQL := DBFilterHandler.FilmFilterQueryGeneration(filterJSON)
@@ -49,7 +49,7 @@ func getFilteredFilm(c *gin.Context) {
 	films := DBFilterHandler.SelectFilter(resultSQL)
 	fmt.Println(films)
 
-	c.JSON(200, gin.H{"films": films})
+	c.JSON(200, films)
 }
 
 func getAllActors(c *gin.Context) {
