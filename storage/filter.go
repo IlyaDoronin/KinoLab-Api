@@ -104,7 +104,7 @@ func (f *Filter) FilmFilterQueryGeneration(filter Filter) string {
 			where += " and "
 		}
 		percent := string([]byte("%"))
-		where += fmt.Sprintf("f.film_name like '%s%s%s'", percent, filter.Search, percent)
+		where += fmt.Sprintf("f.film_name ilike '%s%s%s'", percent, filter.Search, percent)
 	}
 
 	sql += where
